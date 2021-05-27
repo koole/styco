@@ -1,12 +1,12 @@
 import { window, workspace, TextEditor, Range } from "vscode";
 import { JSXElement } from "@babel/types";
-import { parseDocument, IStyleAttribute } from "./util/parseDocument";
+import { parseDocument, IClassAttribute } from "./util/parseDocument";
 import { generateStyledComponent } from "./util/generateStyledComponent";
 import { generateImportStatement } from "./util/generateImportStatement";
 
-export const COMMAND_NAME = "extension.styco";
+export const COMMAND_NAME = "extension.tailwindcomponent";
 
-export const stycoCommand = async () => {
+export const tailwindcomponentCommand = async () => {
   const editor = window.activeTextEditor;
 
   if (!editor) {
@@ -25,24 +25,24 @@ export const stycoCommand = async () => {
     selectedElement,
     elementName,
     insertPosition,
-    styleAttr,
+    classAttr,
     importStatementExisting,
   } = documentInformation;
 
-  const stycoName = await window.showInputBox({
+  const tailwindcomponentName = await window.showInputBox({
     prompt: "Name: ",
     placeHolder: "Name of the component",
   });
 
-  if (!stycoName) {
+  if (!tailwindcomponentName) {
     window.showInformationMessage("Please enter a name");
     return;
   }
-  const component = generateStyledComponent(elementName, stycoName, styleAttr);
+  const component = generateStyledComponent(elementName, tailwindcomponentName, classAttr);
 
   const importStatement =
     importStatementExisting ||
-    workspace.getConfiguration("styco").get("insertImportStatement") === false
+    workspace.getConfiguration("tailwindcomponent").get("insertImportStatement") === false
       ? null
       : await generateImportStatement(editor.document.uri);
 
@@ -53,14 +53,14 @@ export const stycoCommand = async () => {
       importStatement,
       insertPosition,
       selectedElement,
-      styleAttr,
-      stycoName
+      classAttr,
+      tailwindcomponentName
     );
   } catch (e) {
     window.showInformationMessage("Could not update document");
     return;
   }
-  if (workspace.getConfiguration("styco").get("saveAfterExecute")) {
+  if (workspace.getConfiguration("tailwindcomponent").get("saveAfterExecute")) {
     await editor.document.save();
   }
 };
@@ -71,8 +71,8 @@ const modifyDocument = async (
   importStatement: string | null,
   insertPosition: number,
   oldElement: JSXElement,
-  styleAttr: IStyleAttribute | null,
-  stycoName: string
+  classAttr: IClassAttribute | null,
+  tailwindcomponentName: string
 ) => {
   const { document } = editor;
   const openName = oldElement.openingElement.name;
@@ -87,13 +87,13 @@ const modifyDocument = async (
           `\n${importStatement}`
         );
 
-        // Insert StyCo below
+        // Insert TailwindComponent below
         editBuilder.insert(
           document.positionAt(insertPosition + 1),
           `\n${styledComponent}\n`
         );
       } else {
-        // Insert StyCo
+        // Insert TailwindComponent
         editBuilder.insert(
           document.positionAt(insertPosition),
           `\n\n${styledComponent}\n`
@@ -101,11 +101,11 @@ const modifyDocument = async (
       }
 
       // Remove style-attribute
-      if (styleAttr !== null) {
+      if (classAttr !== null) {
         editBuilder.delete(
           new Range(
-            document.positionAt(styleAttr.start!),
-            document.positionAt(styleAttr.end!)
+            document.positionAt(classAttr.start!),
+            document.positionAt(classAttr.end!)
           )
         );
       }
@@ -116,7 +116,7 @@ const modifyDocument = async (
           document.positionAt(openName.start!),
           document.positionAt(openName.end!)
         ),
-        stycoName
+        tailwindcomponentName
       );
 
       // Rename Closing Tag
@@ -126,7 +126,7 @@ const modifyDocument = async (
             document.positionAt(closeName.start!),
             document.positionAt(closeName.end!)
           ),
-          stycoName
+          tailwindcomponentName
         );
       }
     },

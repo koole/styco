@@ -1,20 +1,19 @@
 {
-  "name": "styco",
-  "displayName": "styco - styled components converter",
-  "description": "Transform tags with inline style-props to styled components",
+  "name": "tailwindcomponent",
+  "displayName": "tailwindcomponent - tailwind to components converter",
+  "description": "Transform className to tailwind components",
   "version": "0.2.2",
   "engines": {
     "vscode": "^1.41.0"
   },
   "license": "MIT",
   "repository": {
-    "url": "https://github.com/Agreon/styco"
+    "url": "https://github.com/Agreon/tailwindcomponent"
   },
-  "publisher": "DanielHuth",
+  "publisher": "koole",
   "categories": [
     "Formatters"
   ],
-  "icon": "styco_logo.png",
   "keywords": [
     "css",
     "formatter",
@@ -31,29 +30,29 @@
   "activationEvents": [
     "onLanguage:typescriptreact",
     "onLanguage:javascriptreact",
-    "onCommand:extension.styco"
+    "onCommand:extension.tailwindcomponent"
   ],
   "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
-      "title": "StyCo",
+      "title": "TailwindComponent",
       "properties": {
-        "styco.insertImportStatement": {
+        "tailwindcomponent.insertImportStatement": {
           "type": "boolean",
           "default": true,
           "description": "Insert import statement of the detected library if not existent"
         },
-        "styco.orderStyleByName": {
+        "tailwindcomponent.orderStyleByName": {
           "type": "boolean",
           "default": false,
           "description": "Order styles by name alphabetically"
         },
-        "styco.saveAfterExecute": {
+        "tailwindcomponent.saveAfterExecute": {
           "type": "boolean",
           "default": true,
           "description": "Save the file after command execution"
         },
-        "styco.disableCodeAction": {
+        "tailwindcomponent.disableCodeAction": {
           "type": "boolean",
           "default": false,
           "description": "Show a CodeAction if a `style`-Attribute is found"
@@ -62,8 +61,8 @@
     },
     "commands": [
       {
-        "command": "extension.styco",
-        "title": "StyCo"
+        "command": "extension.tailwindcomponent",
+        "title": "TailwindComponent"
       }
     ]
   },
@@ -72,7 +71,6 @@
     "webpack": "webpack --mode development",
     "dev": "webpack --mode development --watch",
     "lint": "tslint -c tslint.json 'src/**/*.ts'",
-    "test": "jest"
   },
   "devDependencies": {
     "@babel/core": "^7.9.6",

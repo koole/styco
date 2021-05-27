@@ -23,10 +23,10 @@ const babelOptions: ParserOptions = {
 
 export type Property = { key: string; value: string };
 
-export interface IStyleAttribute {
+export interface IClassAttribute {
   start: number;
   end: number;
-  properties: Property[];
+  properties: any;
 }
 
 const findTagAndInsertPosition = (file: File, offset: number) => {
@@ -35,7 +35,7 @@ const findTagAndInsertPosition = (file: File, offset: number) => {
   let importStatementExisting = false;
 
   traverse(file, {
-    JSXElement: enter => {
+    JSXElement: (enter) => {
       if (enter.node.start === null || enter.node.start > offset) {
         return;
       }
@@ -46,15 +46,15 @@ const findTagAndInsertPosition = (file: File, offset: number) => {
         selectedElement = enter.node;
       }
     },
-    ImportDeclaration: enter => {
+    ImportDeclaration: (enter) => {
       // Just find last Import Statement
       if (enter.node.end !== null) {
         insertPosition = enter.node.end;
       }
 
-      // Check wether 'styled' is already imported
+      // Check wether 'tw' is already imported
       if (
-        enter.node.specifiers.find(s => s.local.name === "styled") !== undefined
+        enter.node.specifiers.find((s) => s.local.name === "tw") !== undefined
       ) {
         importStatementExisting = true;
       }
@@ -64,41 +64,44 @@ const findTagAndInsertPosition = (file: File, offset: number) => {
   return { selectedElement, insertPosition, importStatementExisting };
 };
 
-const supportedValueTypes = [
-  "StringLiteral",
-  "NumericLiteral",
-  "TemplateLiteral",
-];
-
-const getStyleAttribute = (element: JSXElement): IStyleAttribute | null => {
-  const styleAttr = element.openingElement.attributes.find(
-    a => a.type === "JSXAttribute" && a.name.name === "style"
+const getClassNames = (element: JSXElement): IClassAttribute | null => {
+  const classAttr = element.openingElement.attributes.find(
+    (a) => a.type === "JSXAttribute" && a.name.name === "className"
   ) as JSXAttribute | undefined;
 
+  console.log(classAttr);
+
   if (
-    !styleAttr ||
-    !styleAttr.value ||
-    styleAttr.value.type !== "JSXExpressionContainer" ||
-    styleAttr.value.expression.type !== "ObjectExpression"
+    !classAttr ||
+    !classAttr.value ||
+    ((classAttr.value.type !== "JSXExpressionContainer" ||
+      classAttr.value.expression.type !== "TemplateLiteral") &&
+      classAttr.value.type !== "StringLiteral")
   ) {
     return null;
   }
 
-  // Filter and transform properties
-  const properties = (styleAttr.value.expression.properties.filter(
-    p =>
-      p.type === "ObjectProperty" && supportedValueTypes.includes(p.value.type)
-  ) as ObjectProperty[]).map(p => ({
-    key: p.key.name as string,
-    value:
-      p.value.type === "TemplateLiteral"
-        ? p.value.quasis.map(el => el.value.raw).join("")
-        : (p.value as StringLiteral).value,
-  }));
+  let properties = ``;
+  if (
+    classAttr.value.type === "JSXExpressionContainer" &&
+    classAttr.value.expression.type === "TemplateLiteral"
+  ) {
+    if (classAttr.value.expression.quasis.length === 1) {
+      properties = classAttr.value.expression.quasis[0].value.raw;
+    } else {
+      return null;
+    }
+  }
+
+  if (classAttr.value.type === "StringLiteral") {
+    properties = classAttr.value.value;
+  }
+
+  properties = `\n  ${properties.split(" ").join("\n  ")}\n`;
 
   return {
-    start: styleAttr.start!,
-    end: styleAttr.end!,
+    start: classAttr.start!,
+    end: classAttr.end!,
     properties,
   };
 };
@@ -106,11 +109,8 @@ const getStyleAttribute = (element: JSXElement): IStyleAttribute | null => {
 export const parseDocument = (text: string, currentOffset: number) => {
   const file = parse(text, babelOptions);
 
-  const {
-    selectedElement,
-    insertPosition,
-    importStatementExisting,
-  } = findTagAndInsertPosition(file, currentOffset);
+  const { selectedElement, insertPosition, importStatementExisting } =
+    findTagAndInsertPosition(file, currentOffset);
 
   if (selectedElement === undefined) {
     throw new Error("Could not find element");
@@ -119,13 +119,13 @@ export const parseDocument = (text: string, currentOffset: number) => {
   const elementName = (selectedElement.openingElement.name as JSXIdentifier)
     .name;
 
-  const styleAttr = getStyleAttribute(selectedElement);
+  const classAttr = getClassNames(selectedElement);
 
   return {
     selectedElement,
     elementName,
     insertPosition,
     importStatementExisting,
-    styleAttr,
+    classAttr,
   };
 };

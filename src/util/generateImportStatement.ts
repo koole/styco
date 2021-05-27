@@ -18,16 +18,8 @@ interface IStyleLibrary {
 
 const supportedLibraries: IStyleLibrary[] = [
   {
-    packageName: "styled-components",
+    packageName: "utils/tailwind",
     defaultImport: true,
-  },
-  {
-    packageName: "@emotion/styled",
-    defaultImport: true,
-  },
-  {
-    packageName: "linaria",
-    importPath: "linaria/react",
   },
 ];
 
@@ -60,7 +52,7 @@ const extractUsedStyleLibrary = async (
   const content = await workspace.fs.readFile(fileUri);
   const jsonContent = JSON.parse(new TextDecoder("utf-8").decode(content));
 
-  return supportedLibraries.find(lib =>
+  return supportedLibraries.find((lib) =>
     Object.keys(jsonContent.dependencies).includes(lib.packageName)
   );
 };
@@ -87,8 +79,8 @@ export const generateImportStatement = async (
     importDeclaration(
       [
         usedStyleLibrary.defaultImport
-          ? importDefaultSpecifier(identifier("styled"))
-          : importSpecifier(identifier("styled"), identifier("styled")),
+          ? importDefaultSpecifier(identifier("tw"))
+          : importSpecifier(identifier("tw"), identifier("tw")),
       ],
       stringLiteral(usedStyleLibrary.importPath || usedStyleLibrary.packageName)
     )

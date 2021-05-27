@@ -1,18 +1,10 @@
-# StyCo README
+# TailwindComponentCodeAction README
 
-Transform JSX-Tags with style-props to styled components. 
-
-VSCode Marketplace: [Link](https://marketplace.visualstudio.com/items?itemName=DanielHuth.styco)
-
-
-## Demo
-
-![Demo](./demo.gif)
-
+Transform className to tailwind components
 
 ## Usage
 
-Either use the command `StyCo` with `CTRL` + `SHIFT` +  `P` or the code action with `CTRL` + `.` while in the line of the style-attribute.
+Either use the command `TailwindComponent` with `CTRL` + `SHIFT` +  `P` or the code action with `CTRL` + `.` while in the line of the style-attribute.
 
 
 ## Configuration

@@ -1,5 +1,4 @@
-import { workspace } from "vscode";
-import { Property, IStyleAttribute } from "./parseDocument";
+import { IClassAttribute } from "./parseDocument";
 import generate from "@babel/generator";
 import {
   variableDeclaration,
@@ -10,50 +9,30 @@ import {
   callExpression,
   templateLiteral,
   templateElement,
+  StringLiteral,
 } from "@babel/types";
 
-const camelCaseToKebabCase = (input: string) => {
-  let output = "";
-  for (let i = 0; i < input.length; i++) {
-    if (input[i] === input[i].toUpperCase()) {
-      output += "-" + input[i].toLowerCase();
-      continue;
-    }
-    output += input[i];
-  }
-
-  return output;
-};
-
-const generateStyleBlock = (properties: Property[]) => {
-  let stringifiedStyles = properties.map(prop => {
-    return `  ${camelCaseToKebabCase(prop.key)}: ${prop.value}`;
-  });
-
-  if (workspace.getConfiguration("styco").get("orderStyleByName")) {
-    stringifiedStyles = stringifiedStyles.sort();
-  }
-
-  return `\n${stringifiedStyles.join(";\n")};\n`;
+const generateStyleBlock = (classNames: StringLiteral) => {
+  return `${classNames}`;
 };
 
 export const generateStyledComponent = (
   elementName: string,
-  stycoName: string,
-  styleAttr: IStyleAttribute | null
+  tailwindcomponentName: string,
+  classAttr: IClassAttribute | null
 ) => {
   const styleString =
-    styleAttr !== null ? generateStyleBlock(styleAttr.properties) : "";
+    classAttr !== null ? generateStyleBlock(classAttr.properties) : "";
 
   return generate(
     variableDeclaration("const", [
       variableDeclarator(
-        identifier(stycoName),
+        identifier(tailwindcomponentName),
         taggedTemplateExpression(
           // Is default tag? just concat with a '.', otherwise wrap with '()'
           elementName[0] === elementName[0].toLowerCase()
-            ? memberExpression(identifier("styled"), identifier(elementName))
-            : callExpression(identifier("styled"), [identifier(elementName)]),
+            ? memberExpression(identifier("tw"), identifier(elementName))
+            : callExpression(identifier("tw"), [identifier(elementName)]),
           templateLiteral([templateElement({ raw: styleString })], [])
         )
       ),

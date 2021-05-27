@@ -1,6 +1,6 @@
 # Change Log
 
-All notable changes to the "styco" extension will be documented in this file.
+All notable changes to the "tailwindcomponent" extension will be documented in this file.
 
 ## [0.2.2]
 
